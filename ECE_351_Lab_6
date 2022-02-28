@@ -1,0 +1,156 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb  8 13:54:52 2022
+
+@author: learn
+"""
+
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Feb  1 13:33:16 2022
+
+@author:
+"""
+
+ # ###############################################################
+ # #
+ # Jayson Haddon #
+ # ECE 351 and Section 51 #
+ # Lab 6 #
+ #  # 02/22/2022
+ # Any other necessary information needed to navigate the file #
+ # #
+ # ###############################################################
+ 
+import numpy as np
+import matplotlib.pyplot as plt
+import math
+import scipy.signal as sig
+
+#...........Time............#
+steps = 1e-2 # Define step size
+t = np.arange(0, 2 + steps , steps)
+
+
+
+#...........Ramp and Step Function...........#
+def ramp(t):
+    y = np.zeros(t.shape)
+    
+    for i in range(len(t)):
+        if (t[i] > 0):
+            y[i]=t[i]
+        else: 
+            y[i] = 0
+    return y
+        
+def step(t):
+    x = np.zeros(t.shape)
+    
+    for i in range(len(t)):
+        if (t[i] < 0):
+            x[i]= 0
+        else:
+            x[i]=1
+            
+    return x
+#...................Define Hand Calculated y(t)...........#
+def y1(t):
+    z = 0.5*step(t)-0.5*np.exp(-4*t)*step(t)+np.exp(-6*t)*step(t)
+    return z
+
+
+#....................Defined H(S)...........#
+num = [1, 6, 12]
+den = [1, 10, 24]
+
+tout, yout = sig.step((num,den),T=t)
+
+
+#..................Plot y(t) and H(s).............#
+y1= y1(t)
+
+
+plt.figure(figsize = (10, 12))
+plt.subplot(3, 1, 1)
+plt.plot(t,y1)
+plt.grid()
+plt.ylabel('Amplitude')
+plt.xlabel( 't')
+plt.title('Hand Calcuted y(t)')
+
+plt.subplot(3, 1, 2)
+plt.plot(tout,yout)
+plt.grid()
+plt.ylabel('Amplitude ')
+plt.xlabel( 't')
+plt.title('Scipy signal impulse')
+plt.show
+
+
+#.................Residue.............#
+
+num1 = [0, 1, 6, 12]
+den1 = [1 , 10 , 24 , 0]
+
+R, P, K = sig.residue(num1, den1)
+
+print('R =', R)
+print('P =', P)
+print('K =', K)
+
+
+num2 = [0,0,0,0,0,25250]
+den2 = [1, 18, 218, 2036, 9085, 25250,0]
+
+R, P, K = sig.residue(num2, den2)
+
+print('R =', R)
+print('P =', P)
+print('K =', K)
+
+resulta1 = [-0.48557692+0.72836538j, -0.48557692-0.72836538j, 0.09288674-0.04765193j, 0.09288674+0.04765193j] #From the results of sig.residue taking all the results that have real and imgainary parts
+resultb1 = [-3. +4.j, -3. -4.j,-1.+10.j, -1.-10.j] 
+
+
+def cosmethod(b,a):
+    x = 0
+    for i in range(len(b)):
+        k = np.abs(a[i])
+        kang = np.angle(a[i])
+        alpha = np.real(b[i])
+        omega = np.imag(b[i])
+        x += k*np.exp(alpha*t)*np.cos(omega*t + kang)        
+        
+    return x
+
+t = np.arange(0, 4.5 + steps, steps)
+
+y = step(t)*(cosmethod(resultb1,resulta1)+1 + -0.2146193*np.exp(-10*t))
+
+
+den3 = [1, 18, 218, 2036, 9085, 25250]
+
+to, yo = sig.step((num2, den3), T=t)
+
+plt.figure(figsize = (10, 12))
+plt.subplot(3, 1, 1)
+plt.plot(t,y)
+plt.grid()
+plt.ylabel('Amplitude')
+plt.xlabel( 't')
+plt.title('Hand Calcuted y(t)')
+
+plt.subplot(3, 1, 2)
+plt.plot(to,yo)
+plt.grid()
+plt.ylabel('Amplitude ')
+plt.xlabel( 't')
+plt.title('Scipy signal impulse')
+plt.show
+
+
+
+    
+    
+    
